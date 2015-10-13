@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import getopt
+from EMDUnifrac import emd_unifrac
 
 # input_file1='../EMD/Test/test_truth_CAMI.txt'
 # input_file2='../EMD/Test/test_reconstruction_CAMI.txt'
@@ -32,10 +33,10 @@ def main(argv):
 			input_file2 = arg
 		elif opt in ("-o", "--Output"):
 			output_file = arg
-		elif opt in ("-u", "--UnifracLocation"):
-			EMD_loc = arg
-		elif opt in ("-p", "--PythonLocation"):
-			python_loc = arg
+		# elif opt in ("-u", "--UnifracLocation"):
+		# 	EMD_loc = arg
+		# elif opt in ("-p", "--PythonLocation"):
+		# 	python_loc = arg
 		elif opt in ("-e", "--Epsilon"):
 			epsilon = float(arg)
 		elif opt in ("-n", "--Normalize"):
@@ -44,34 +45,40 @@ def main(argv):
 	tax_path1 = list()
 	tax_ids1 = list()
 	weights1_dict = dict()
-	fid = open(input_file1, 'r')
-	temp = fid.readlines()
-	for line in temp:
-		temp_split = line.split()
-		if len(temp_split) > 1:  # skip blank lines
+	with open(input_file1, 'r') as fid:
+		# temp = fid.readlines()
+		for line in fid:
+			line = line.rstrip()
+			if len(line) == 0:
+				continue  # skip blank lines
 			if line.lower().split(':')[0] == '@ranks':
 				ranks1 = line.strip().split(':')[1].split('|')
-			if '@' not in temp_split[0] and '#' not in temp_split[0]:  # not comment or header
-				tax_path1.append(temp_split[2])  # add the whole taxpath
-				tax_ids1.append(temp_split[0])  # just terminal tax ID
-				weights1_dict[temp_split[0]] = float(temp_split[-1])  # the associated weight
+				continue
+			if line[0] in ['@', '#']:
+				continue  # skip comment or header
+			temp_split = line.split('\t')
+			tax_path1.append(temp_split[2])  # add the whole taxpath
+			tax_ids1.append(temp_split[0])  # just terminal tax ID
+			weights1_dict[temp_split[0]] = float(temp_split[4])  # the associated weight
 
-	fid.close()
 	# Read in classification 2
 	tax_path2 = list()
 	tax_ids2 = list()
 	weights2_dict = dict()
-	fid = open(input_file2, 'r')
-	temp = fid.readlines()
-	for line in temp:
-		temp_split = line.split()
-		if len(temp_split) > 1:
+	with open(input_file2, 'r') as fid:
+		for line in fid:
+			line = line.rstrip()
+			if len(line) == 0:
+				continue  # skip blank lines
 			if line.lower().split(':')[0] == '@ranks':
 				ranks2 = line.strip().split(':')[1].split('|')
-			if '@' not in temp_split[0] and '#' not in temp_split[0]:  # not comment or header
-				tax_path2.append(temp_split[2])  # add the whole taxpath
-				tax_ids2.append(temp_split[0])  # just terminal tax ID
-				weights2_dict[temp_split[0]] = float(temp_split[-1])  # the associated weight
+				continue
+			if line[0] in ['@', '#']:
+				continue  # skip comment or header
+			temp_split = line.split('\t')
+			tax_path2.append(temp_split[2])  # add the whole taxpath
+			tax_ids2.append(temp_split[0])  # just terminal tax ID
+			weights2_dict[temp_split[0]] = float(temp_split[4])  # the associated weight
 
 	fid.close()
 	all_taxpaths = list(set(tax_path1) | set(tax_path2))
@@ -194,7 +201,8 @@ def main(argv):
 		list_senss.append(sensitivity)
 
 	# EMD code
-	res = subprocess.check_output(python_loc + " " + EMD_loc + " -g " + input_file1 + " -r " + input_file2, shell=True)
+	res = emd_unifrac(input_file1, input_file2)
+	# res = subprocess.check_output(python_loc + " " + EMD_loc + " -g " + input_file1 + " -r " + input_file2, shell=True)
 
 	fid.write("TP \t" + '|'.join([str(list_tps[i]) for i in range(0, len(rank_names))]) + "\n")
 	fid.write("FP \t" + '|'.join([str(list_fps[i]) for i in range(0, len(rank_names))]) + "\n")
