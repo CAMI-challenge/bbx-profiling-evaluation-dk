@@ -31,7 +31,7 @@ def main(argv):
 			input_file1 = arg
 		elif opt in ("-r", "--Reconstruction"):
 			input_file2 = arg
-	emd_unifrac(input_file1, input_file2)
+	print emd_unifrac(input_file1, input_file2)
 
 
 def emd_unifrac(input_file1, input_file2):
@@ -167,7 +167,7 @@ def emd_unifrac(input_file1, input_file2):
 					mass_b[d_neighbors_source_a[sink_b]] = mass_b[d_neighbors_source_a[sink_b]]-mass_a[source_a]  # remove mass from B,
 					mass_a[source_a] = 0  # then remove mass from A
 					break  # and end the loop, with no more mass to distribute from this source.
-	print emd
+	return emd
 
 
 if __name__ == "__main__":
