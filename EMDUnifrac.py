@@ -46,7 +46,7 @@ def emd_unifrac(input_file1, input_file2):
 				continue  # skip blank lines
 			if line[0] in ['@', '#']:
 				continue  # skip comment or header
-			temp_split = line.split()
+			temp_split = line.split('\t')
 			tax_path1.append(temp_split[2])  # add the whole taxpath
 			tax_ids1.append(temp_split[0])  # just terminal tax ID
 			weights1[temp_split[0]] = float(temp_split[4])  # the associated weight
@@ -62,7 +62,7 @@ def emd_unifrac(input_file1, input_file2):
 				continue  # skip blank lines
 			if line[0] in ['@', '#']:
 				continue  # skip comment or header
-			temp_split = line.split()
+			temp_split = line.split('\t')
 			tax_path2.append(temp_split[2])  # add the whole taxpath
 			tax_ids2.append(temp_split[0])  # just terminal tax ID
 			weights2[temp_split[0]] = float(temp_split[-1])  # the associated weight
