@@ -81,7 +81,7 @@ def main(argv):
 			weights2_dict[temp_split[0]] = float(temp_split[4])  # the associated weight
 
 	fid.close()
-	all_taxpaths = list(set(tax_path1) | set(tax_path2))
+	# all_taxpaths = list(set(tax_path1) | set(tax_path2))
 
 	# Use cutoff
 	for tax_id in tax_ids1:
@@ -132,9 +132,9 @@ def main(argv):
 	list_senss = list()
 	list_l1_norms = list()
 
-	for rank in rank_names:
+	for rank_pos, rank in enumerate(rank_names):
 		# select tax IDs and freqs of interest from input1
-		rank_pos = rank_names.index(rank)
+		# rank_pos = rank_names.index(rank)
 		# get the tax ids at the rank of interest
 		rank_tax_ids1 = list()
 		rank_freqs1 = list()
@@ -151,6 +151,7 @@ def main(argv):
 			if len(temp) == rank_pos + 1:
 				rank_tax_ids2.append(temp[rank_pos])
 				rank_freqs2.append(reduced_weights2_dict[temp[rank_pos]])
+
 		# normalize if this was asked for
 		if normalize == "y":
 			if sum(rank_freqs1) > 0:
@@ -165,9 +166,9 @@ def main(argv):
 			false_positives = len(set_rank_tax_ids2.difference(set_rank_tax_ids1))  # in reconstruction not truth
 			false_negatives = len(set_rank_tax_ids1.difference(set_rank_tax_ids2))  # in truth not reconstruction
 			if true_positives + false_positives == 0:
-				precition = -1
+				precision = -1
 			else:
-				precition = float(true_positives) / (true_positives + false_positives)
+				precision = float(true_positives) / (true_positives + false_positives)
 			if true_positives + false_negatives == 0:
 				sensitivity = -1
 			else:
@@ -176,7 +177,8 @@ def main(argv):
 			all_tax_ids = set_rank_tax_ids1 | set_rank_tax_ids2
 			l1_norm = 0
 			for taxID in all_tax_ids:
-				# note that taxID's might repeat in rank_taxIDs1 due to missing organism, so sum up all of these before taking the difference
+				# note that taxID's might repeat in rank_taxIDs1 due to missing organism,
+				# so sum up all of these before taking the difference
 				sum1 = 0
 				for i in range(0, len(rank_tax_ids1)):
 					if rank_tax_ids1[i] == taxID:
@@ -190,14 +192,14 @@ def main(argv):
 			true_positives = -1
 			false_positives = -1
 			false_negatives = -1
-			precition = -1
+			precision = -1
 			sensitivity = -1
 			l1_norm = -1
 		list_l1_norms.append(l1_norm)
 		list_tps.append(true_positives)
 		list_fps.append(false_positives)
 		list_fns.append(false_negatives)
-		list_precs.append(precition)
+		list_precs.append(precision)
 		list_senss.append(sensitivity)
 
 	# EMD code
