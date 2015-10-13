@@ -39,31 +39,34 @@ def emd_unifrac(input_file1, input_file2):
 	tax_path1 = list()
 	tax_ids1 = list()
 	weights1 = dict()
-	fid = open(input_file1, 'r')
-	temp = fid.readlines()
-	for line in temp:
-		temp_split = line.split()
-		if len(temp_split) > 1:  # skip blank lines
-			if '@' not in temp_split[0] and '#' not in temp_split[0]:  # not comment or header
-				tax_path1.append(temp_split[2])  # add the whole taxpath
-				tax_ids1.append(temp_split[0])  # just terminal tax ID
-				weights1[temp_split[0]] = float(temp_split[-1])  # the associated weight
-	fid.close()
+	with open(input_file1, 'r') as fid:
+		for line in fid:
+			line = line.rstrip()
+			if len(line) == 0:
+				continue  # skip blank lines
+			if line[0] in ['@', '#']:
+				continue  # skip comment or header
+			temp_split = line.split()
+			tax_path1.append(temp_split[2])  # add the whole taxpath
+			tax_ids1.append(temp_split[0])  # just terminal tax ID
+			weights1[temp_split[0]] = float(temp_split[4])  # the associated weight
 
 	# Read in classification 2
 	tax_path2 = list()
 	tax_ids2 = list()
 	weights2 = dict()
-	fid = open(input_file2, 'r')
-	temp = fid.readlines()
-	for line in temp:
-		temp_split = line.split()
-		if len(temp_split) > 1:
-			if '@' not in temp_split[0] and '#' not in temp_split[0]:  # not comment or header
-				tax_path2.append(temp_split[2])  # add the whole taxpath
-				tax_ids2.append(temp_split[0])  # just terminal tax ID
-				weights2[temp_split[0]] = float(temp_split[-1])  # the associated weight
-	fid.close()
+	with open(input_file2, 'r') as fid:
+		for line in fid:
+			line = line.rstrip()
+			if len(line) == 0:
+				continue  # skip blank lines
+			if line[0] in ['@', '#']:
+				continue  # skip comment or header
+			temp_split = line.split()
+			tax_path2.append(temp_split[2])  # add the whole taxpath
+			tax_ids2.append(temp_split[0])  # just terminal tax ID
+			weights2[temp_split[0]] = float(temp_split[-1])  # the associated weight
+
 	all_taxpaths = list(set(tax_path1) | set(tax_path2))
 	
 	# form the graph
@@ -74,21 +77,22 @@ def emd_unifrac(input_file1, input_file2):
 	for tax_path in all_taxpaths:
 		tax_ids = tax_path.split('|')
 		for i in range(len(tax_ids) - 1, -1, -1):  # iterate backwards through list
-			if tax_ids[i] != '':
-				branch_len = 1  # This is where we could add the actual branch lengths
-				if i == 0:  # if it's the first entry, connect it to the root
-					parent_id = '-1'
+			if tax_ids[i] == '':
+				continue
+			branch_len = 1  # This is where we could add the actual branch lengths
+			if i == 0:  # if it's the first entry, connect it to the root
+				parent_id = '-1'
+				network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
+				network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
+			else:  # if it's not the first entry, look for its parent
+				for j in range(i-1, -1, -1):  # traverse up the taxpath until a non '||' is found
+					if tax_ids[j] == '':  # found the parent, so add the clade
+						branch_len += 1  # you found a '||' so add one to the taxonomy
+						continue
+					parent_id = tax_ids[j]
 					network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
 					network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
-				else:  # if it's not the first entry, look for its parent
-					for j in range(i-1, -1, -1):  # traverse up the taxpath until a non '||' is found
-						if tax_ids[j] != '':  # found the parent, so add the clade
-							parent_id = tax_ids[j]
-							network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
-							network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
-							break  # you found the parent, so stop traversing up the taxpath
-						else:
-							branch_len += 1  # you found a '||' so add one to the taxonomy
+					break  # you found the parent, so stop traversing up the taxpath
 	nodes = network_graph.nodes()
 	distance_matrix = numpy.zeros([len(nodes), len(nodes)], dtype=numpy.int8)
 
@@ -143,8 +147,8 @@ def emd_unifrac(input_file1, input_file2):
 	
 	while sum(mass_a) > 1e-10:  # While we still have mass to move,
 		d += 1  # increment distance to move
-		indices_sorted_mass_source_a = numpy.flipud(numpy.argsort(mass_a)) # sort the sources, big to small.
-		for source_a in indices_sorted_mass_source_a: # Now, for each source of mass in A
+		indices_sorted_mass_source_a = numpy.flipud(numpy.argsort(mass_a))  # sort the sources, big to small.
+		for source_a in indices_sorted_mass_source_a:  # Now, for each source of mass in A
 			if mass_a[source_a] == 0:  # Have we gotten through all the sources with mass left? If so, break.
 				break
 			# Find the n-mers in B which are distance d from our source.
