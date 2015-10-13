@@ -212,7 +212,7 @@ def main(argv):
 	fid.write("Prec \t" + '|'.join([str(list_precs[i]) for i in range(0, len(rank_names))]) + "\n")
 	fid.write("Sens \t" + '|'.join([str(list_senss[i]) for i in range(0, len(rank_names))]) + "\n")
 	fid.write("L1norm \t" + '|'.join([str(list_l1_norms[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("Unifrac \t" + res)
+	fid.write("Unifrac \t" + str(res))
 	fid.close()
 
 
