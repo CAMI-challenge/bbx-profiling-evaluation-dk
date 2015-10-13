@@ -31,7 +31,10 @@ def main(argv):
 			input_file1 = arg
 		elif opt in ("-r", "--Reconstruction"):
 			input_file2 = arg
+	emd_unifrac(input_file1, input_file2)
 
+
+def emd_unifrac(input_file1, input_file2):
 	# Read in classification 1
 	tax_path1 = list()
 	tax_ids1 = list()
@@ -144,10 +147,12 @@ def main(argv):
 		for source_a in indices_sorted_mass_source_a: # Now, for each source of mass in A
 			if mass_a[source_a] == 0:  # Have we gotten through all the sources with mass left? If so, break.
 				break
-			# d_neighbors_source_a = numpy.argwhere(Distance[source_a, :] == d)  # Find the n-mers in B which are distance d from our source.
-			d_neighbors_source_a = numpy.argwhere(distance_matrix[source_a, :] == d)  # Find the n-mers in B which are distance d from our source.
+			# Find the n-mers in B which are distance d from our source.
+			# d_neighbors_source_a = numpy.argwhere(Distance[source_a, :] == d)
+			d_neighbors_source_a = numpy.argwhere(distance_matrix[source_a, :] == d)
 			d_neighbors_source_a = d_neighbors_source_a.flatten()
-			indices_sorted_mass_b = numpy.flipud(numpy.argsort(mass_b[d_neighbors_source_a]))  # We order the sinks, we're going to fill from the top down.
+			# We order the sinks, we're going to fill from the top down.
+			indices_sorted_mass_b = numpy.flipud(numpy.argsort(mass_b[d_neighbors_source_a]))
 			for sink_b in indices_sorted_mass_b:  # Iterating over the indices of the sinks.
 				if mass_b[d_neighbors_source_a[sink_b]] == 0:
 					break
