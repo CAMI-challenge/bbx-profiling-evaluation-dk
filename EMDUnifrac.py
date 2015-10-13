@@ -99,7 +99,7 @@ def main(argv):
 		for node2 in nodes:
 			if node2 in dist_dict[node1]:
 				distance_matrix[lookup[node1], lookup[node2]] = dist_dict[node1][node2]
-			elif node1 in dist_dict[node]:
+			elif node1 in dist_dict[node2]:
 				distance_matrix[lookup[node1], lookup[node2]] = dist_dict[node2][node1]
 	# test if symmetric
 	# (D.transpose() == D).all()
