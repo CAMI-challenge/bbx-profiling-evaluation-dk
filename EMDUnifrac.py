@@ -164,15 +164,20 @@ def emd_unifrac(input_file_truth, input_file_query):
 			for sink_b in indices_sorted_mass_b:  # Iterating over the indices of the sinks.
 				if mass_query[d_neighbors_source_a[sink_b]] == 0:
 					break
-				if mass_truth[indice_source_truth] - mass_query[d_neighbors_source_a[sink_b]] >= 0:  # check to see if our source can fulfil this sink.
-					flow[indice_source_truth, d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]]  # If so, note the flow.
+				# check to see if our source can fulfil this sink.
+				if mass_truth[indice_source_truth] - mass_query[d_neighbors_source_a[sink_b]] >= 0:
+					# If so, note the flow.
+					flow[indice_source_truth, d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]]
 					emd += d*mass_query[d_neighbors_source_a[sink_b]]  # update the EMD calc,
-					mass_truth[indice_source_truth] = mass_truth[indice_source_truth] - mass_query[d_neighbors_source_a[sink_b]]  # then remove mass from A
+					# then remove mass from A
+					mass_truth[indice_source_truth] = mass_truth[indice_source_truth] - mass_query[d_neighbors_source_a[sink_b]]
 					mass_query[d_neighbors_source_a[sink_b]] = 0  # and remove mass from B.
 				else:  # otherwise, we've run out of mass from SourceA.
-					flow[indice_source_truth, d_neighbors_source_a[sink_b]] = mass_truth[indice_source_truth]  # If so, note the flow to this last sink,
+					# If so, note the flow to this last sink,
+					flow[indice_source_truth, d_neighbors_source_a[sink_b]] = mass_truth[indice_source_truth]
 					emd += d*mass_truth[indice_source_truth]  # update the EMD calc,
-					mass_query[d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]]-mass_truth[indice_source_truth]  # remove mass from B,
+					# remove mass from B,
+					mass_query[d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]]-mass_truth[indice_source_truth]
 					mass_truth[indice_source_truth] = 0  # then remove mass from A
 					break  # and end the loop, with no more mass to distribute from this source.
 	return emd
