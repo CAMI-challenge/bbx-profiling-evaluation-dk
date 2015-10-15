@@ -14,8 +14,11 @@ from EMDUnifrac import emd_unifrac
 
 
 def main(argv):
-	input_file1 = ''
-	input_file2 = ''
+	file_path_truth = None
+	file_path_recon = None
+	file_path_output = None
+	epsilon = None
+	normalize = None
 	try:
 		opts, args = getopt.getopt(
 			argv, "g:r:o:u:p:e:n:h",
@@ -28,11 +31,11 @@ def main(argv):
 			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -u /path/to/UnifracEMD/script -p /path/to/python -e epsilon -n <normalize(y/n)'
 			sys.exit(2)
 		elif opt in ("-g", "--GroundTruth"):
-			input_file1 = arg
+			file_path_truth = arg
 		elif opt in ("-r", "--Reconstruction"):
-			input_file2 = arg
+			file_path_recon = arg
 		elif opt in ("-o", "--Output"):
-			output_file = arg
+			file_path_output = arg
 		# elif opt in ("-u", "--UnifracLocation"):
 		# 	EMD_loc = arg
 		# elif opt in ("-p", "--PythonLocation"):
@@ -40,78 +43,51 @@ def main(argv):
 		elif opt in ("-e", "--Epsilon"):
 			epsilon = float(arg)
 		elif opt in ("-n", "--Normalize"):
-			normalize = arg
+			normalize = arg == 'y'
+		calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=epsilon, normalize=normalize)
 
-	tax_path1 = list()
-	tax_ids1 = list()
-	weights1_dict = dict()
-	with open(input_file1, 'r') as fid:
-		# temp = fid.readlines()
-		for line in fid:
+
+def read_taxonomy_file(file_path, epsilon=None):
+	assert isinstance(file_path, basestring)
+	assert epsilon is None or isinstance(epsilon, (float, int, long))
+	tax_path = list()
+	tax_ids = list()
+	weights = dict()
+	ranks = []
+	with open(file_path, 'r') as read_handler:
+		for line in read_handler:
 			line = line.rstrip()
 			if len(line) == 0:
 				continue  # skip blank lines
 			if line.lower().split(':')[0] == '@ranks':
-				ranks1 = line.strip().split(':')[1].split('|')
+				ranks = line.strip().split(':')[1].split('|')
 				continue
 			if line[0] in ['@', '#']:
 				continue  # skip comment or header
 			temp_split = line.split('\t')
-			tax_path1.append(temp_split[2])  # add the whole taxpath
-			tax_ids1.append(temp_split[0])  # just terminal tax ID
-			weights1_dict[temp_split[0]] = float(temp_split[4])  # the associated weight
-
-	# Read in classification 2
-	tax_path2 = list()
-	tax_ids2 = list()
-	weights2_dict = dict()
-	with open(input_file2, 'r') as fid:
-		for line in fid:
-			line = line.rstrip()
-			if len(line) == 0:
-				continue  # skip blank lines
-			if line.lower().split(':')[0] == '@ranks':
-				ranks2 = line.strip().split(':')[1].split('|')
+			weight = float(temp_split[4])
+			if epsilon is not None and weight < epsilon:
+				# Use cutoff
 				continue
-			if line[0] in ['@', '#']:
-				continue  # skip comment or header
-			temp_split = line.split('\t')
-			tax_path2.append(temp_split[2])  # add the whole taxpath
-			tax_ids2.append(temp_split[0])  # just terminal tax ID
-			weights2_dict[temp_split[0]] = float(temp_split[4])  # the associated weight
+			if weight == 0:
+				# Ignore zero weighted taxIDs
+				continue
+			tax_path.append(temp_split[2])  # add the whole taxpath
+			tax_ids.append(temp_split[0])  # just terminal tax ID
+			weights[temp_split[0]] = weight  # the associated weight
+	return tax_ids, tax_path, weights, ranks
 
-	fid.close()
-	# all_taxpaths = list(set(tax_path1) | set(tax_path2))
 
-	# Use cutoff
-	for tax_id in tax_ids1:
-		if weights1_dict[tax_id] < epsilon:
-			weights1_dict[tax_id] = 0
+def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=None, normalize=True):
+	assert isinstance(file_path_truth, basestring)
+	assert isinstance(file_path_recon, basestring)
+	assert isinstance(file_path_output, basestring)
+	assert epsilon is None or isinstance(epsilon, (float, int, long))
+	assert isinstance(normalize, bool)
 
-	# Delete zero weighted taxIDs
-	reduced_tax_ids1 = list()
-	reduced_tax_path1 = list()
-	reduced_weights1_dict = dict()
-	for key in weights1_dict.keys():
-		if weights1_dict[key] != 0:
-			reduced_tax_ids1.append(key)
-			reduced_tax_path1.append(tax_path1[tax_ids1.index(key)])
-			reduced_weights1_dict[key] = weights1_dict[key]
-
-	# Use cutoff
-	for tax_id in tax_ids2:
-		if weights2_dict[tax_id] < epsilon:
-			weights2_dict[tax_id] = 0
-
-	# Delete zero weighted taxIDs
-	reduced_tax_ids2 = list()
-	reduced_tax_path2 = list()
-	reduced_weights2_dict = dict()
-	for key in weights2_dict.keys():
-		if weights2_dict[key] != 0:
-			reduced_tax_ids2.append(key)
-			reduced_tax_path2.append(tax_path2[tax_ids2.index(key)])
-			reduced_weights2_dict[key] = weights2_dict[key]
+	# read taxonomic profiles
+	tax_ids1, tax_path1, weights1_dict, ranks1 = read_taxonomy_file(file_path_truth, epsilon)
+	tax_ids2, tax_path2, weights2_dict, ranks2 = read_taxonomy_file(file_path_recon, epsilon)
 
 	# Get the ranks, whichever is longest
 	if len(ranks1) > len(ranks2):
@@ -120,9 +96,9 @@ def main(argv):
 		rank_names = ranks2
 
 	# open the output file
-	fid = open(output_file, 'w')
-	fid.write("@input\t " + os.path.basename(input_file2) + "\n")
-	fid.write("@ground_truth\t " + os.path.basename(input_file1) + "\n")
+	fid = open(file_path_output, 'w')
+	fid.write("@input\t " + os.path.basename(file_path_recon) + "\n")
+	fid.write("@ground_truth\t " + os.path.basename(file_path_truth) + "\n")
 	fid.write("@Taxanomic ranks\t " + '|'.join(rank_names) + "\n")
 
 	list_tps = list()
@@ -138,22 +114,22 @@ def main(argv):
 		# get the tax ids at the rank of interest
 		rank_tax_ids1 = list()
 		rank_freqs1 = list()
-		for i in range(0, len(reduced_tax_path1)):
-			temp = reduced_tax_path1[i].split('|')
+		for i in range(0, len(tax_path1)):
+			temp = tax_path1[i].split('|')
 			if len(temp) == rank_pos + 1:
 				rank_tax_ids1.append(temp[rank_pos])
-				rank_freqs1.append(reduced_weights1_dict[temp[rank_pos]])
+				rank_freqs1.append(weights1_dict[temp[rank_pos]])
 		# select tax IDs and freqs of interest from input2
 		rank_tax_ids2 = list()
 		rank_freqs2 = list()
-		for i in range(0, len(reduced_tax_path2)):
-			temp = reduced_tax_path2[i].split('|')
+		for i in range(0, len(tax_path2)):
+			temp = tax_path2[i].split('|')
 			if len(temp) == rank_pos + 1:
 				rank_tax_ids2.append(temp[rank_pos])
-				rank_freqs2.append(reduced_weights2_dict[temp[rank_pos]])
+				rank_freqs2.append(weights2_dict[temp[rank_pos]])
 
 		# normalize if this was asked for
-		if normalize == "y":
+		if normalize:
 			if sum(rank_freqs1) > 0:
 				rank_freqs1 = [rank_freqs1[i] / sum(rank_freqs1) for i in range(0, len(rank_freqs1))]
 			if sum(rank_freqs2) > 0:
@@ -203,7 +179,7 @@ def main(argv):
 		list_senss.append(sensitivity)
 
 	# EMD code
-	res = emd_unifrac(input_file1, input_file2)
+	res = emd_unifrac(file_path_truth, file_path_recon)
 	# res = subprocess.check_output(python_loc + " " + EMD_loc + " -g " + input_file1 + " -r " + input_file2, shell=True)
 
 	fid.write("TP \t" + '|'.join([str(list_tps[i]) for i in range(0, len(rank_names))]) + "\n")
