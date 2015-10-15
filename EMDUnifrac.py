@@ -11,6 +11,7 @@ import numpy
 import networkx
 import getopt
 import sys
+# todo: check if substracted percent is done right in case a rang does not add up to 100%
 
 
 def main(argv):
@@ -79,20 +80,18 @@ def emd_unifrac(input_file_truth, input_file_query):
 		for i in range(len(tax_ids) - 1, -1, -1):  # iterate backwards through list
 			if tax_ids[i] == '':
 				continue
+			parent_id = '-1'  # in case of unknown path
 			branch_len = 1  # This is where we could add the actual branch lengths
-			if i == 0:  # if it's the first entry, connect it to the root
-				parent_id = '-1'
-				network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
-				network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
-			else:  # if it's not the first entry, look for its parent
-				for j in range(i-1, -1, -1):  # traverse up the taxpath until a non '||' is found
-					if tax_ids[j] == '':  # found the parent, so add the clade
-						branch_len += 1  # you found a '||' so add one to the taxonomy
-						continue
-					parent_id = tax_ids[j]
-					network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
-					network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
-					break  # you found the parent, so stop traversing up the taxpath
+			for j in range(i-1, -1, -1):  # traverse up the taxpath until a non '||' is found
+				if tax_ids[j] == '':
+					branch_len += 1  # you found a '||' so add one to the taxonomy
+					continue
+				# found the parent, so add the clade
+				parent_id = tax_ids[j]
+				break
+			network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
+			network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
+			# break  # you found the parent, so stop traversing up the taxpath
 	nodes = network_graph.nodes()
 	tax_distance_matrix = numpy.zeros([len(nodes), len(nodes)], dtype=numpy.int8)
 
@@ -149,7 +148,9 @@ def emd_unifrac(input_file_truth, input_file_query):
 
 	emd = 0  # Initialize the EMD computation.
 	d = 0  # Initialize distance to move mass at 0.
-	while sum(mass_truth) > 1e-10:  # While we still have mass to move,
+	max_distance = numpy.max(tax_distance_matrix)
+	# while sum(mass_truth) > 1e-10:  # While we still have mass to move,
+	while d < max_distance:  # While we still have mass to move,
 		d += 1  # increment distance to move
 		indices_sorted_mass_source_truth = numpy.flipud(numpy.argsort(mass_truth))  # sort the sources, big to small.
 		for indice_source_truth in indices_sorted_mass_source_truth:  # Now, for each source of mass in A
@@ -177,9 +178,11 @@ def emd_unifrac(input_file_truth, input_file_query):
 					flow[indice_source_truth, d_neighbors_source_a[sink_b]] = mass_truth[indice_source_truth]
 					emd += d*mass_truth[indice_source_truth]  # update the EMD calc,
 					# remove mass from B,
-					mass_query[d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]]-mass_truth[indice_source_truth]
+					mass_query[d_neighbors_source_a[sink_b]] = mass_query[d_neighbors_source_a[sink_b]] - mass_truth[indice_source_truth]
 					mass_truth[indice_source_truth] = 0  # then remove mass from A
 					break  # and end the loop, with no more mass to distribute from this source.
+	if numpy.sum(mass_truth) > 0:
+		raise ArithmeticError("Mass moving failed: {}".format(numpy.sum(mass_truth)))
 	return emd
 
 
