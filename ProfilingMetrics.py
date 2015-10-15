@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 import getopt
 from EMDUnifrac import emd_unifrac
