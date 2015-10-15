@@ -60,7 +60,7 @@ def read_taxonomy_file(file_path, epsilon=None):
 			temp_split = line.split('\t')
 			weight = float(temp_split[4])
 			if epsilon is not None and weight < epsilon:
-				# Use cutoff
+				# Ignore taxIDs below cutoff
 				continue
 			if weight == 0:
 				# Ignore zero weighted taxIDs
