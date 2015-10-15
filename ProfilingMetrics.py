@@ -6,8 +6,6 @@ from EMDUnifrac import emd_unifrac
 # input_file1='../EMD/Test/test_truth_CAMI.txt'
 # input_file2='../EMD/Test/test_reconstruction_CAMI.txt'
 # output_file='test.txt'
-# EMD_loc = "../EMD/EMDUnifrac.py"
-# python_loc = "/local/cluster/bin/python"
 # epsilon = 0
 # normalize="n"
 
@@ -17,17 +15,17 @@ def main(argv):
 	file_path_recon = None
 	file_path_output = None
 	epsilon = None
-	normalize = None
+	normalize = True
 	try:
 		opts, args = getopt.getopt(
-			argv, "g:r:o:u:p:e:n:h",
-			["GroundTruth=", "Reconstruction=", "Output=", "UnifracLocation=", "PythonLocation=", "Epsilon=", "Normalize="])
+			argv, "g:r:o:e:n:h",
+			["GroundTruth=", "Reconstruction=", "Output=", "Epsilon=", "Normalize="])
 	except getopt.GetoptError:
-		print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -u /path/to/UnifracEMD/script -p /path/to/python -e epsilon -n <normalize(y/n)'
+		print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -u /path/to/UnifracEMD/script -p /path/to/python -e epsilon -n <normalize(y/n)'
+			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)'
 			sys.exit(2)
 		elif opt in ("-g", "--GroundTruth"):
 			file_path_truth = arg
@@ -35,15 +33,11 @@ def main(argv):
 			file_path_recon = arg
 		elif opt in ("-o", "--Output"):
 			file_path_output = arg
-		# elif opt in ("-u", "--UnifracLocation"):
-		# 	EMD_loc = arg
-		# elif opt in ("-p", "--PythonLocation"):
-		# 	python_loc = arg
 		elif opt in ("-e", "--Epsilon"):
 			epsilon = float(arg)
 		elif opt in ("-n", "--Normalize"):
 			normalize = arg == 'y'
-		calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=epsilon, normalize=normalize)
+	calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=epsilon, normalize=normalize)
 
 
 def read_taxonomy_file(file_path, epsilon=None):
@@ -78,11 +72,11 @@ def read_taxonomy_file(file_path, epsilon=None):
 
 
 def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=None, normalize=True):
-	assert isinstance(file_path_truth, basestring)
-	assert isinstance(file_path_recon, basestring)
-	assert isinstance(file_path_output, basestring)
-	assert epsilon is None or isinstance(epsilon, (float, int, long))
-	assert isinstance(normalize, bool)
+	assert isinstance(file_path_truth, basestring), file_path_truth
+	assert isinstance(file_path_recon, basestring), file_path_recon
+	assert isinstance(file_path_output, basestring), file_path_output
+	assert epsilon is None or isinstance(epsilon, (float, int, long)), epsilon
+	assert isinstance(normalize, bool), normalize
 
 	# read taxonomic profiles
 	tax_ids1, tax_path1, weights1_dict, ranks1 = read_taxonomy_file(file_path_truth, epsilon)
