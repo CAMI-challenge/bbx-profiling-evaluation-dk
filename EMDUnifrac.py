@@ -166,7 +166,7 @@ def compute_emd(mass_truth, mass_query, node_distance_matrix):
 					mass_query[d_neighbors_truth[sink_b]] = mass_query[d_neighbors_truth[sink_b]] - mass_truth[indice_source_truth]
 					mass_truth[indice_source_truth] = 0  # then remove mass from A
 					break  # and end the loop, with no more mass to distribute from this source.
-	if numpy.sum(mass_truth) > 0:
+	if numpy.sum(mass_truth) > 1e-10:
 		raise ArithmeticError("Mass moving failed: {}".format(numpy.sum(mass_truth)))
 	return emd
 
