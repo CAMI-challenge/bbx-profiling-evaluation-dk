@@ -48,5 +48,6 @@ RUN chmod u+x ${PREFIX}/bin/EMDUnifrac.py ${PREFIX}/bin/ProfilingMetrics.py
 ADD evaluate ${PREFIX}/bin/
 ENV PATH ${PATH}:${PREFIX}/bin
 RUN chmod u+x ${PREFIX}/bin
+ADD Taskfile
 
 ENTRYPOINT ["evaluate"]
