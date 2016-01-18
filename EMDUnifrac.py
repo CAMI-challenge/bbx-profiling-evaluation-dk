@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 # This will compute the Unifrac distance from two CAMI formatted taxonomic profiling inputs.
 The branch lengths are currently all 1 (between each taxonomic rank)
