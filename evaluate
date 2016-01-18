@@ -15,6 +15,11 @@ OUTPUT=/bbx/mnt/output/metrics.txt
 # you can access the task in `docker run task` as the first argument
 TASK=$1
 
+# Ensure the biobox.yaml file is valid
+validate-biobox-file \
+  --input ${INPUT} \
+  --schema /schema.yaml \
+
 mkdir -p ${OUTPUT_DIR}
 
 # Parse the read locations from this file

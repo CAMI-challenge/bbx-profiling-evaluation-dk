@@ -49,5 +49,6 @@ ADD evaluate ${PREFIX}/bin/
 ENV PATH ${PATH}:${PREFIX}/bin
 RUN chmod -R u+x ${PREFIX}/bin
 ADD Taskfile /
+ADD schema.yaml /
 
 ENTRYPOINT ["evaluate"]
