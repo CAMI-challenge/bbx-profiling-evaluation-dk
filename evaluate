@@ -52,6 +52,6 @@ results:
   - name: David Koslicki
     type: txt
     inline: false
-    description: Metrics: True Positives, False Positives, False Negatives, Precision, Sensitivity, L1-Norm, Unifrac
+    description: This tool produces the metrics True Positives, False Positives, False Negatives, Precision, Sensitivity, L1-Norm, Unifrac
     value: metrics.txt
 EOF
