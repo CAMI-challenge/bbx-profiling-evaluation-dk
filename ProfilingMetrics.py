@@ -94,7 +94,7 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 	fid = open(file_path_output, 'w')
 	fid.write("@input\t " + os.path.basename(file_path_recon) + "\n")
 	fid.write("@ground_truth\t " + os.path.basename(file_path_truth) + "\n")
-	fid.write("@Taxanomic ranks\t " + '|'.join(rank_names) + "\n")
+	fid.write("@Taxonomic ranks\t " + '|'.join(rank_names) + "\n")
 
 	list_tps = list()
 	list_fps = list()
