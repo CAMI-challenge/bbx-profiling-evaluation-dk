@@ -18,16 +18,17 @@ def main(argv):
 	file_path_output = None
 	epsilon = None
 	normalize = True
+	camioutput=False
 	try:
 		opts, args = getopt.getopt(
-			argv, "g:r:o:e:n:h",
-			["GroundTruth=", "Reconstruction=", "Output=", "Epsilon=", "Normalize="])
+			argv, "g:r:o:e:n:c:h",
+			["GroundTruth=", "Reconstruction=", "Output=", "Epsilon=", "Normalize=","CAMIformat="])
 	except getopt.GetoptError:
-		print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)'
+		print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)'
+			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]'
 			sys.exit(2)
 		elif opt in ("-g", "--GroundTruth"):
 			file_path_truth = arg
@@ -39,7 +40,9 @@ def main(argv):
 			epsilon = float(arg)
 		elif opt in ("-n", "--Normalize"):
 			normalize = arg == 'y'
-	calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=epsilon, normalize=normalize)
+		elif opt in ("-c", "--CAMIformat"):
+			camioutput = arg == 'y'
+	calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=epsilon, normalize=normalize, camioutput=camioutput)
 
 
 def read_taxonomy_file(file_path, epsilon=None):
@@ -73,7 +76,7 @@ def read_taxonomy_file(file_path, epsilon=None):
 	return tax_ids, tax_path, weights, ranks
 
 
-def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=None, normalize=True):
+def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=None, normalize=True,camioutput=False):
 	assert isinstance(file_path_truth, basestring), file_path_truth
 	assert isinstance(file_path_recon, basestring), file_path_recon
 	assert isinstance(file_path_output, basestring), file_path_output
@@ -92,10 +95,14 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 
 	# open the output file
 	fid = open(file_path_output, 'w')
-	fid.write("@input\t " + os.path.basename(file_path_recon) + "\n")
-	fid.write("@ground_truth\t " + os.path.basename(file_path_truth) + "\n")
-	fid.write("@Taxonomic ranks\t " + '|'.join(rank_names) + "\n")
-
+	if (camioutput == False):
+		fid.write("@input\t " + os.path.basename(file_path_recon) + "\n")
+		fid.write("@ground_truth\t " + os.path.basename(file_path_truth) + "\n")
+		fid.write("@Taxonomic ranks\t " + '|'.join(rank_names) + "\n")
+	else:
+		sep = "\t";
+		fid.write(sep.join(["Taxonomic Rank", "Unifrac", "L1norm", "Sensitivity: TP/(TP+FN)", "Precision: TP/(TP+FP)", "True Positives", "False Positives", "False Negatives"])+"\n")
+		
 	list_tps = list()
 	list_fps = list()
 	list_fns = list()
@@ -177,13 +184,20 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 	res = emd_unifrac(file_path_truth, file_path_recon)
 	# res = subprocess.check_output(python_loc + " " + EMD_loc + " -g " + input_file1 + " -r " + input_file2, shell=True)
 
-	fid.write("TP \t" + '|'.join([str(list_tps[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("FP \t" + '|'.join([str(list_fps[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("FN \t" + '|'.join([str(list_fns[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("Prec \t" + '|'.join([str(list_precs[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("Sens \t" + '|'.join([str(list_senss[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("L1norm \t" + '|'.join([str(list_l1_norms[i]) for i in range(0, len(rank_names))]) + "\n")
-	fid.write("Unifrac \t" + str(res))
+	if (camioutput == False):
+		fid.write("TP \t" + '|'.join([str(list_tps[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("FP \t" + '|'.join([str(list_fps[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("FN \t" + '|'.join([str(list_fns[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("Prec \t" + '|'.join([str(list_precs[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("Sens \t" + '|'.join([str(list_senss[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("L1norm \t" + '|'.join([str(list_l1_norms[i]) for i in range(0, len(rank_names))]) + "\n")
+		fid.write("Unifrac \t" + str(res))
+	else:
+		sep = "\t"
+		fid.write(sep.join(["rank independent", str(res), "n.a.", "n.a.", "n.a.", "n.a.", "n.a.", "n.a."])+"\n")
+		for i in range(0, len(rank_names)):
+			fid.write(sep.join([rank_names[i], "n.a.", str(list_l1_norms[i]), str(list_senss[i]), str(list_precs[i]), str(list_tps[i]), str(list_fps[i]), str(list_fns[i])])+"\n")
+	
 	fid.close()
 
 
