@@ -154,6 +154,8 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 			# L1 error
 			all_tax_ids = set_rank_tax_ids1 | set_rank_tax_ids2
 			l1_norm = 0
+			count1 = 0
+			count2 = 0
 			for taxID in all_tax_ids:
 				# note that taxID's might repeat in rank_taxIDs1 due to missing organism,
 				# so sum up all of these before taking the difference
@@ -161,18 +163,23 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 				for i in range(0, len(rank_tax_ids1)):
 					if rank_tax_ids1[i] == taxID:
 						sum1 = sum1 + rank_freqs1[i]
+						count1 = count1 + 1
 				sum2 = 0
 				for i in range(0, len(rank_tax_ids2)):
 					if rank_tax_ids2[i] == taxID:
 						sum2 = sum2 + rank_freqs2[i]
+						count2 = count2 + 1
 				l1_norm = l1_norm + abs(sum1 - sum2)
+			if ((count1 <= 0) | (count2 <= 0)):
+				l1_norm = float('NaN')
+				precision = float('NaN')
 		else:
-			true_positives = -1
-			false_positives = -1
-			false_negatives = -1
-			precision = -1
-			sensitivity = -1
-			l1_norm = -1
+			true_positives = float('NaN')
+			false_positives = float('NaN')
+			false_negatives = float('NaN')
+			precision = float('NaN')
+			sensitivity = float('NaN')
+			l1_norm = float('NaN')
 		list_l1_norms.append(l1_norm)
 		list_tps.append(true_positives)
 		list_fps.append(false_positives)
