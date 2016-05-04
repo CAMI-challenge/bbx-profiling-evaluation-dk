@@ -203,7 +203,7 @@ def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=Non
 		sep = "\t"
 		fid.write(sep.join(["rank independent", str(res), "n.a.", "n.a.", "n.a.", "n.a.", "n.a.", "n.a."])+"\n")
 		for i in range(0, len(rank_names)):
-			fid.write(sep.join([rank_names[i], "n.a.", str(list_l1_norms[i]), str(list_senss[i]), str(list_precs[i]), str(list_tps[i]), str(list_fps[i]), str(list_fns[i])])+"\n")
+			fid.write(sep.join([rank_names[i].lstrip(), "n.a.", str(list_l1_norms[i]), str(list_senss[i]), str(list_precs[i]), str(list_tps[i]), str(list_fps[i]), str(list_fns[i])])+"\n")
 	
 	fid.close()
 
