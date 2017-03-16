@@ -1,0 +1,1 @@
+default: /usr/local/bin/ProfilingMetrics.py -c y -g  $GROUND_TRUTH  -r  $PREDICTION  -o  $OUTPUT_FILE  -e  0 -n y 
