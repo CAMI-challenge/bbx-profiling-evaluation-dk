@@ -12,7 +12,7 @@ COPY src/  /usr/local/bin
 
 ENV SCHEMA /usr/local/schema.yaml
 
-ENV OUTPUT /bbx/mnt/output
+ENV OUTPUT /bbx/output
 
 ENV BIOBOX_EXEC execute_biobox.sh
 
