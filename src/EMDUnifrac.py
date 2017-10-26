@@ -21,19 +21,19 @@ def main(argv):
 	try:
 		opts, args = getopt.getopt(argv, "g:r:h", ["GroundTruth=", "Reconstruction="])
 	except getopt.GetoptError:
-		print 'Files must be in the Bioboxes profiling format: https://github.com/bioboxes/rfc/tree/master/data-format'
-		print 'Call using: python EMDUnifrac.py -g <GroundTruth.cami> -r <Reconstruction.cami>'
+		print('Files must be in the Bioboxes profiling format: https://github.com/bioboxes/rfc/tree/master/data-format')
+		print('Call using: python EMDUnifrac.py -g <GroundTruth.cami> -r <Reconstruction.cami>')
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'Files must be in the Bioboxes profiling format: https://github.com/bioboxes/rfc/tree/master/data-format'
-			print 'Call using: python EMDUnifrac.py -g <GroundTruth.cami> -r <Reconstruction.cami>'
+			print('Files must be in the Bioboxes profiling format: https://github.com/bioboxes/rfc/tree/master/data-format')
+			print('Call using: python EMDUnifrac.py -g <GroundTruth.cami> -r <Reconstruction.cami>')
 			sys.exit(2)
 		elif opt in ("-g", "--GroundTruth"):
 			input_file1 = arg
 		elif opt in ("-r", "--Reconstruction"):
 			input_file2 = arg
-	print emd_unifrac(input_file1, input_file2)
+	print(emd_unifrac(input_file1, input_file2))
 
 
 def read_taxonomy_file(file_path):
@@ -97,11 +97,11 @@ def emd_unifrac(file_path_truth, file_path_query):
 			network_graph.add_edge(parent_id, tax_ids[i], weight=branch_len)
 			network_graph_directed.add_edge(parent_id, tax_ids[i], weight=branch_len)
 			# break  # you found the parent, so stop traversing up the taxpath
-	nodes = network_graph.nodes()
+	nodes = list(network_graph.nodes())
 	node_distance_matrix = numpy.zeros([len(nodes), len(nodes)], dtype=numpy.int8)
 
 	# Compute all pairwise distances
-	dist_dict = networkx.all_pairs_dijkstra_path_length(network_graph)
+	dist_dict = dict(networkx.all_pairs_dijkstra_path_length(network_graph))
 	lookup = {}
 	for i, elem in enumerate(nodes):
 		lookup[elem] = i
