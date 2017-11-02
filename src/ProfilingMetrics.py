@@ -24,11 +24,11 @@ def main(argv):
 			argv, "g:r:o:e:n:c:h",
 			["GroundTruth=", "Reconstruction=", "Output=", "Epsilon=", "Normalize=","CAMIformat="])
 	except getopt.GetoptError:
-		print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]'
+		print('Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]')
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]'
+			print('Call using: python ProfilingMetrics.py -g <GroundTruth.profile> -r <Reconstruction.profile> -o <Output.txt> -e epsilon -n <normalize(y/n)> [-c <CAMIformat(y/n)>]')
 			sys.exit(2)
 		elif opt in ("-g", "--GroundTruth"):
 			file_path_truth = arg
@@ -46,8 +46,8 @@ def main(argv):
 
 
 def read_taxonomy_file(file_path, epsilon=None):
-	assert isinstance(file_path, basestring)
-	assert epsilon is None or isinstance(epsilon, (float, int, long))
+	assert isinstance(file_path, str)
+	assert epsilon is None or isinstance(epsilon, (float, int))
 	tax_path = list()
 	tax_ids = list()
 	weights = dict()
@@ -77,10 +77,10 @@ def read_taxonomy_file(file_path, epsilon=None):
 
 
 def calc_metrics(file_path_truth, file_path_recon, file_path_output, epsilon=None, normalize=True,camioutput=False):
-	assert isinstance(file_path_truth, basestring), file_path_truth
-	assert isinstance(file_path_recon, basestring), file_path_recon
-	assert isinstance(file_path_output, basestring), file_path_output
-	assert epsilon is None or isinstance(epsilon, (float, int, long)), epsilon
+	assert isinstance(file_path_truth, str), file_path_truth
+	assert isinstance(file_path_recon, str), file_path_recon
+	assert isinstance(file_path_output, str), file_path_output
+	assert epsilon is None or isinstance(epsilon, (float, int)), epsilon
 	assert isinstance(normalize, bool), normalize
 
 	# read taxonomic profiles
